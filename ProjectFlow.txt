@@ -15,3 +15,98 @@
 
 ->create a new Django app using the startapp command, -------------> python manage.py startapp ChatAnalyzerApi
 
++++++++++++++++++++++++++++++++++++++++++++++++++++
+copy my settings .py 
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+(A) __________ work on Authentication first (Login) ________________________
+
+-> Jwt token
+
+Step 1: Install Django REST Framework and Django REST Framework-JWT
+Alredy done as included in requirement.txt so dont install again
+          code:
+          pip install djangorestframework
+          pip install djangorestframework_simplejwt
+
+Step 2: Update settings.py      
+        As Alredy copied mine settings .py so leave it 
+
+Step 3: Create User Models
+    If you're using Django's built-in User model, you’re all set.
+    else If you need a custom user model, define it in models.py and set it as the default user model in settings.py. 
+
+    Here, I'll use the default User model.
+
+Step 4: User Serializer
+  Create a serializer for user registration. 
+    create serializers.py file in ChatAnalyzerApi folder
+      code:-
+            from django.contrib.auth.models import User  # Import the User model from Django's authentication system
+            from rest_framework import serializers  # Import serializers from Django REST Framework
+
+            class UserSerializer(serializers.ModelSerializer):  # Define a serializer for the User model
+                class Meta:  # Meta class to specify metadata options
+                    model = User  # Specify the User model for the serializer
+                    fields = ["id", "username" ,"email",  "password"]  # Specify the fields to include in the serialized representation
+                    extra_kwargs = {"password": {"write_only": True}}  # Specify additional options for the password field
+
+                def create(self, validated_data):  # Method to create a new user
+                    # Create a new user instance using the validated data
+                    user = User.objects.create_user(**validated_data)
+                    return user  # Return the newly created user instance
+
+Step 5: Create Authentication Views  
+  work in views.py in ChatAnalyzerApi
+    code:-      
+        from django.contrib.auth.models import User
+        from .serializers import UserSerializer
+        from rest_framework import generics
+        from rest_framework.permissions import IsAuthenticated, AllowAny  # Import permission classes from Django REST Framework
+
+        class CreateUserView(generics.CreateAPIView):
+            queryset = User.objects.all()
+            serializer_class = UserSerializer
+            permission_classes = [AllowAny]
+
+
+
+Step 6: URL Configuration
+  Goto urls.py in backend asnd work here
+    code:-
+          from django.contrib import admin # Import the admin module
+          from django.urls import path, include # Import functions for defining URL patterns 
+          from ChatAnalyzerApi.views import CreateUserView # Import the CreateUserView class for user registration 
+          from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView # Import views for JWT token management
+
+
+            # Define URL patterns
+          urlpatterns = [
+                   path('admin/', admin.site.urls),  # Map the URL '/admin/' to the Django admin interface
+                   path("ChatAnalyzerApi/user/register/", CreateUserView.as_view(), name="register"),  # Map the URL '/api/user/register/' to the CreateUserView for user registration
+                   path("ChatAnalyzerApi/token/", TokenObtainPairView.as_view(), name="get_token"),  # Map the URL '/api/token/' to the TokenObtainPairView for obtaining JWT tokens
+                   path("ChatAnalyzerApi/token/refresh/", TokenRefreshView.as_view(), name="refresh"),  # Map the URL '/api/token/refresh/' to the TokenRefreshView for refreshing JWT tokens
+                   path("ChatAnalyzerApi-auth/", include("rest_framework.urls")),  # Include the Django REST Framework's authentication URLs
+               ]
+
+-> Now in terminal( cd to backened)
+The makemigrations cmd is used to generate new migration files based on changes you have made to your models. These migration files define the operations that need to be applied to the database schema to make it match the changes you've made to your models.
+
+------- python manage.py makemigrations
+------- python manage.py migrate
+
+------- python manage.py runserver
+
+ ->Now go to route ---/ChatAnalyzerApi/user/register/
+       ->create new user
+       -> now goto  ---/ChatAnalyzerApi/token/ 
+              ->generate access and refresh token by entering the user credential
+
+token working ok
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ now will setup login page in frontend and  will use token to authenticate user
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+4th commit done
+
+----------------------------------------------------------------

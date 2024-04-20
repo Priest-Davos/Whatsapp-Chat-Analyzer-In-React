@@ -109,4 +109,185 @@ token working ok
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 4th commit done
 
-----------------------------------------------------------------
+---------------------------- install some packages ------------------------------------
+
+cd to whatsappChatAnalyzer
+  install some packeges
+     -> npm install axios react-router-dom jwt-decode
+
+     for material ui pre-designed components
+     -> npm install @mui/material @emotion/react @emotion/styled
+     -> npm install @mui/icons-material
+
+     -> npm install @radix-ui/themes
+     Import the global CSS file at the root of your application.   
+     -> import '@radix-ui/themes/styles.css';
+
+    -> install and setup Tailwind css
+        npm install -D tailwindcss  (in terminal)
+        npx tailwindcss init (in terminal)
+
+        Configure your template paths (will do later)
+          Add the paths to all of your template files in your tailwind.config.js file.
+        Add the Tailwind directives to your CSS
+           update index.css
+            code :-
+                @tailwind base;
+                @tailwind components;
+                @tailwind utilities;
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Now Frontend organization and Axios setup(00:52:00)
+  ->In src folder
+      -> create some directories
+          1> pages , 2> styles , 3> components
+      
+      ->create files
+          1> constants.js , 2> api.js 
+
+  -> In frotend directory 
+      -> create .env file
+        -> Here code :-
+            VITE_API_URL="https://locahost:8080"
+
+Now in constants.js defining constants for token keys,..
+ to be used in managing JWT tokens for authentication in your application
+    code :-
+        export const ACCESS_TOKEN = "access";
+        export const REFRESH_TOKEN = "refresh"
+
+Now in api.js Add Interceptors to Attach Tokens: You can automatically attach tokens to all outgoing requests. This ensures that every API call made through Axios includes the necessary authentication headers
+        code:-
+            import axios from 'axios';
+            import { ACCESS_TOKEN, REFRESH_TOKEN } from './constants'; // Assuming these are defined as shown previously
+
+            // Create an instance of axios
+            const api = axios.create({
+                baseURL: import.meta.env.VITE_API_URL
+            });
+
+            // Request interceptor to attach the token to requests
+            api.interceptors.request.use(
+                (config) => {
+                    const token = localStorage.getItem(ACCESS_TOKEN);
+                    if (token) {
+                        config.headers['Authorization'] = `Bearer ${token}`;
+                    }
+                    return config;
+                },
+                (error) => {
+                    return Promise.reject(error);
+                }
+            );
+
+            // // Response interceptor for handling global errors or token refresh logic
+            // api.interceptors.response.use(
+            //     response => response, // Just return the response if no errors
+            //     error => {
+            //         // Check if it's a token expiry error
+            //         if (error.response.status === 401) {
+            //             const refreshToken = localStorage.getItem(REFRESH_TOKEN);
+            //             // You can add a function to handle token refresh
+            //             return refreshTokenAndRetryRequest(refreshToken, error.config);
+            //         }
+            //         return Promise.reject(error);
+            //     }
+            // );
+
+            // // Example function to handle refreshing of tokens
+            // async function refreshTokenAndRetryRequest(refreshToken, originalRequest) {
+            //     try {
+            //         // API call to refresh token
+            //         const response = await axios.post('http://your-api-url.com/refresh', { refreshToken });
+            //         const { accessToken } = response.data;
+            //         localStorage.setItem(ACCESS_TOKEN, accessToken); // Update the access token
+            //         // Update the original request with new token
+            //         originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
+            //         // Retry the original request with new token
+            //         return api(originalRequest);
+            //     } catch (refreshError) {
+            //         localStorage.removeItem(ACCESS_TOKEN);
+            //         localStorage.removeItem(REFRESH_TOKEN);
+            //         // Redirect to login or do something else on token refresh failure
+            //         return Promise.reject(refreshError);
+            //     }
+            // }
+
+            export default api;
+
+Now to get tokens and protect our routes 
+    ->create a component ProtectedRoute.jsx in components folder
+        code : -
+
+            import { Navigate } from "react-router-dom";
+            import { jwtDecode } from "jwt-decode";
+            import api from "../api";
+            import { REFRESH_TOKEN, ACCESS_TOKEN } from "../constants";
+            import { useState, useEffect } from "react";
+
+            function ProtectedRoute({ children }) {
+                const [isAuthorized, setIsAuthorized] = useState(null);
+
+                useEffect(() => {
+                    // On component mount, check if the user is authorized
+                    auth().catch(() => setIsAuthorized(false));
+                }, []);
+
+                const refreshToken = async () => {
+                    try {
+                        // Retrieve the refresh token from local storage
+                        const refreshToken = localStorage.getItem(REFRESH_TOKEN);
+                        // Request a new access token using the refresh token
+                        const res = await api.post("/api/token/refresh/", {
+                            refresh: refreshToken,
+                        });
+                        // If token refresh is successful, update the access token in local storage
+                        if (res.status === 200) {
+                            localStorage.setItem(ACCESS_TOKEN, res.data.access);
+                            setIsAuthorized(true); // User is authorized
+                        } else {
+                            // Token refresh failed, set authorized to false
+                            throw new Error("Token refresh failed");
+                        }
+                    } catch (error) {
+                        // Log and handle token refresh errors
+                        console.error("Error refreshing token:", error);
+                        setIsAuthorized(false); // User is not authorized
+                    }
+                };
+
+                const auth = async () => {
+                    const token = localStorage.getItem(ACCESS_TOKEN);
+                    if (!token) {
+                        // If access token is not present, user is not authorized
+                        setIsAuthorized(false);
+                        return;
+                    }
+                    const decoded = jwtDecode(token);
+                    const tokenExpiration = decoded.exp;
+                    const now = Date.now() / 1000;
+
+                    if (tokenExpiration < now) {
+                        // Token has expired, attempt to refresh it
+                        await refreshToken();
+                    } else {
+                        // Token is still valid, user is authorized
+                        setIsAuthorized(true);
+                    }
+                };
+
+                if (isAuthorized === null) {
+                    // Loading state while authentication status is being determined
+                    return <div>Loading...</div>;
+                }
+
+                // Render children if user is authorized, otherwise redirect to login
+                return isAuthorized ? children : <Navigate to="/login" />;
+            }
+
+            export default ProtectedRoute;
+
+5th commit here
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

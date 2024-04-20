@@ -4,8 +4,8 @@ import api from "../api";
 import { REFRESH_TOKEN, ACCESS_TOKEN } from "../constants";
 import { useState, useEffect } from "react";
 
-function ProtectedRoute({ children }) {
-    const [isAuthorized, setIsAuthorized] = useState(null);
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+    const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
     useEffect(() => {
         // On component mount, check if the user is authorized
@@ -16,6 +16,8 @@ function ProtectedRoute({ children }) {
         try {
             // Retrieve the refresh token from local storage
             const refreshToken = localStorage.getItem(REFRESH_TOKEN);
+            if (!refreshToken) throw new Error("Refresh token not found");
+
             // Request a new access token using the refresh token
             const res = await api.post("/api/token/refresh/", {
                 refresh: refreshToken,
@@ -42,7 +44,7 @@ function ProtectedRoute({ children }) {
             setIsAuthorized(false);
             return;
         }
-        const decoded = jwtDecode(token);
+        const decoded: { exp: number } = jwtDecode(token);
         const tokenExpiration = decoded.exp;
         const now = Date.now() / 1000;
 
@@ -61,7 +63,15 @@ function ProtectedRoute({ children }) {
     }
 
     // Render children if user is authorized, otherwise redirect to login
-    return isAuthorized ? children : <Navigate to="/login" />;
+    return isAuthorized ? <>{children}</> : <Navigate to="/login" />;
 }
 
 export default ProtectedRoute;
+
+
+// In this TSX adaptation:
+
+// The type of the children prop is explicitly defined as React.ReactNode.
+// The state isAuthorized is typed as boolean | null.
+// Error handling within refreshToken function is improved, including handling the case when the refresh token is not found.
+// Type annotations are added where necessary to ensure type safety.

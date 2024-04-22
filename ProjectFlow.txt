@@ -295,3 +295,426 @@ update ProtectedRoute.jsx,api.js,constants.js to typescript format
 
 6th commit
 +++++++++++++++++++++++++++++++++
+Now setup some navigation and pages
+++++++++++++++++++++++++++++++++
+
+->create some component in pages folder
+
+Home.tsx
+LandingLoginRegister.tsx
+Login.tsx
+Register.tsx
+NotFound.tsx
+
+if using vscode then install some extension to make code writing easy
+
+write some initial code in all  created components (use shortcut .. tsrafce )
+---------------------------------------------------------------------
+Now setup App.tsx 
+---------------------------------------------------------------------
+        code:
+            // Import necessary React and React Router components
+            import React from "react";
+            import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+            import "./App.css"
+            //import components
+            // import LandingLoginRegister from "./pages/LandingLoginRegister";
+            import Login from "./pages/Login";
+            import Register from "./pages/Register";
+            import Home from "./pages/Home";
+            import NotFound from "./pages/NotFound";
+            import ProtectedRoute from "./components/ProtectedRoute";
+            import LandingLoginRegister from "./pages/LandingLoginRegister";
+
+            // Logout component clears all stored tokens and navigates to login page
+            const Logout: React.FC = () => {
+              localStorage.clear(); // Clear all local storage items
+              return <Navigate to="/Login-register" />; // Redirect to login page
+            };
+
+            // RegisterAndLogout component clears storage and renders the Register component
+            const RegisterAndLogout: React.FC = () => {
+              localStorage.clear(); // Clear all local storage items
+              return <Register />; // Render Register page
+            };
+
+            // Main App component that defines the routing for the application
+            const App: React.FC = () => {
+              return (
+                <BrowserRouter>
+                  <Routes>
+
+                    <Route
+                      path="/" // Main route that is protected
+                      element={
+                        <ProtectedRoute> {/* Only allow access if user is authenticated*/}
+                          <Home /> {/* Home component for authenticated users*/}
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path ="/Login-register" element={<LandingLoginRegister/>} />
+                    <Route path="/login" element={<Login />} /> {/* Route for the login page */}
+                    <Route path="/logout" element={<Logout />} /> {/* Route for logging out */}
+                    <Route path="/register" element={<RegisterAndLogout />} /> {/* Route for registration and logout */}
+                    <Route path="*" element={<NotFound />}></Route> {/* Route for handling undefined paths */}
+
+                  </Routes>
+                </BrowserRouter>
+              );
+            };
+
+            export default App;
+------------------------------------------------------------------
+I congigure tailwind.css as was not working (use chatgpt if face problem)
+create a postcss.config.cjs
+    copy paste my code as no logic
+update index.css 
+     @import 'tailwindcss/base';
+     @import 'tailwindcss/components';
+     @import 'tailwindcss/utilities';
+     
+---------------------------------------------------------------
+
+created a background video online and paste in asset
+->will use it later
+
+install  react-icons package
+--------------------------------------------------------------------------
+->will create a background component which will render pages in it
+like Login,Register, LandingLoginRegister etc 
+
+->create a Background.tsx component
+    code :-
+          import React, { ReactNode } from 'react';
+          import Bg from '../assets/Bg.mp4'; // Import the background video asset
+
+          // Define the props expected by the Background component
+          interface BackgroundProps {
+            children: ReactNode; // Accept children elements
+          }
+
+          // Define the Background component
+          const Background: React.FC<BackgroundProps> = ({ children }) => {
+            return (
+              // Outer div to contain the background video and provide styling
+              <div className=" flex justify-center items-center h-screen">
+                {/* Nested div for the video element */}
+                <div className=" relative inset-0 w-full h-full">
+                  {/* Video element to display the background video */}
+                  <video
+
+                    loop // Enable looping of the video
+                    controls={false} // Disable controls for the video
+                    muted // Mute the video
+                    autoPlay // Enable auto play of the video
+                    className="  w-full h-full object-cover" // Apply styling to the video element
+                  >
+                    {/* Specify the source of the video with the type attribute */}
+                    <source src={Bg} type="video/mp4" />
+                  </video>
+
+                {/* Render children elements */}
+                {children}
+
+                </div>
+
+
+              </div>
+            );
+          }
+
+          export default Background;
+
+_________________________________________________________________________
+Now  basic work on  individual components    (will upgrade later on)
+----------------------------------------------------------------------------   
+-> NotFound.tsx   
+      code :-
+            import React from "react";
+            import Background from "../components/Background";
+            import { Link } from "react-router-dom";
+
+            // Annotate the component as a React Functional Component
+            const NotFound: React.FC = () => {
+              return (
+                <Background>
+                <div className=" flex justify-center items-center opacity-75  dark:bg-slate-800 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-lg shadow-md  justify-center">
+                  <div className="text-center text-white">
+                    <h1 className="text-4xl font-bold mb-8">404 Not Found</h1>
+                    <p className="text-lg mb-4">
+                      Oops! The page you're looking for doesn't exist or has been moved.
+                    </p>
+                    <p className="text-lg mb-8">
+                      Please check the URL or{" "}
+                      <Link to="/" className="underline text-blue-300 hover:text-red-300">
+                        navigate back to the homepage
+                      </Link>
+                      .
+                    </p>
+                    {/* <Link to="/" className="text-lg text-white underline">
+                      Go to Homepage
+                    </Link> */}
+                  </div>
+                </div>
+                </Background>
+              );
+            }
+
+            export default NotFound;
+
+
+
+-> Create a LoadingIndicator component as will be required in future
+    So Create a LoadingIndicator.tsx file in components
+        code :-
+              import "../styles/LoadingIndicator.css"
+              const LoadingIndicator=()=> {
+                return (
+                  <div className="loader-container mb-5 ">
+                  <div className="loader "></div>
+              </div>
+
+                );
+              }
+              export default LoadingIndicator;
+
+-> create a LoadingIndicator.css in styles
+           code:-
+                 copy paste my code
+
+
+-> Create a generic form to handle both login and register
+  -> So create a Form.tsx component in components directory  
+        code :-
+            import { useState } from "react"; // Import the useState hook from React
+            import api from "../api"; // Import the API abstraction for making HTTP requests
+            import { useNavigate } from "react-router-dom"; // Import the useNavigate hook for navigation
+            import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants"; // Import token constants
+            import "../styles/Form.css"; // Import styles specific to forms
+            import LoadingIndicator from "./LoadingIndicator"; // Import the loading indicator component
+            import "../styles/LoadingIndicator.css"
+
+            import Button from '@mui/material/Button';
+
+            // Define the props expected by the Form component
+            interface FormProps {
+              route: string; // Route for making API requests
+              method: "login" | "register"; // Method for the form (login or register)
+            }
+
+            // Define the Form component
+            function Form({ route, method }: FormProps) {
+                // Define state variables and functions to update them
+                const [username, setUsername] = useState<string>(""); // State to store the username input
+                const [email, setEmail] = useState<string>(""); // State to store the email input
+                const [password, setPassword] = useState<string>(""); // State to store the password input
+                const [loading, setLoading] = useState<boolean>(false); // State to handle the display of the loading indicator
+                const navigate = useNavigate(); // Hook to navigate to different pages
+
+                // Determine the title of the form based on the method
+                const formTitle = method === "login" ? "Login" : "Register";
+
+                // Define the function to handle form submission
+                const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+                    setLoading(true); // Set loading to true to display the loading indicator
+                    e.preventDefault(); // Prevent the default form submission behavior
+
+                    try {
+                        // If the method is register, make a POST request to register a new user
+                        if (method === "register") {
+                            await api.post(route, { username, email, password });
+                            navigate("/login"); // Redirect to the login page after successful registration
+                        } 
+                        // If the method is login, make a POST request to log in the user
+                        else if (method === "login") {
+                            const response = await api.post(route, { username, password });
+                            // Store access and refresh tokens in local storage
+                            localStorage.setItem(ACCESS_TOKEN, response.data.access);
+                            localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
+                            navigate("/"); // Redirect to the home page after successful login
+                        }
+                    } catch (error) {
+                        // If there's an error, show an alert with the error message
+                        if (error instanceof Error) {
+                            alert(error.message);
+                        }
+                    } finally {
+                        setLoading(false); // Set loading to false after the request is complete
+                        setPassword("")
+                        setUsername("")
+                    }
+                };
+
+                // Render the form
+                return (
+
+                    <form onSubmit={handleSubmit} className="flex justify-center items-center opacity-75  dark:bg-slate-800 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-lg shadow-md form-container justify-center">
+                        <div className="  top-0 left-0    right-0 left-0 bottom-0 ">
+                            <div className="text-center text-3xl font-bold mb-3  ">
+                                <h1 className="text-white">{formTitle}</h1>
+                            </div>
+                            <input
+                                className=" form-input  mb-4"
+                                type="text"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                placeholder="Username"
+
+                            />
+                            {method === 'register' && 
+                            <input
+                                className="  form-input mb-4"
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Email"
+                            />}
+                            <input
+                                className=" form-input  mb-4 "
+                                type="password"
+                                value={password}
+
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Password"
+                            />
+
+                            {/* Show loading indicator while processing the form submission */}  
+                            {loading && <LoadingIndicator />}
+
+                            {/* Submit button for the form */}
+                            <Button className=" form-button mt-4" type="submit" variant="contained" color="success">
+                                {formTitle}
+                            </Button>
+
+                        </div>
+                    </form>
+
+                );
+            }
+
+            export default Form;
+
+------------------------------------------------------------------------
+                        create styles for form
+create form.css and copy paste my file
+----------------------------------------------------------------------       
+
+
+-> create a LandingLoginRegister Component which has 3 buttons
+      for Login with email✅, register✅, Sign in  with google❌(later work)
+
+create a LandingLoginRegister.tsx component
+        -> create Routing for it in App.tsx(already done)
+                  import LandingLoginRegister from "./pages/LandingLoginRegister";
+                  <Route path ="/Login-register" element={<LandingLoginRegister/>} />
+        -> Update navigate in ProtectedRoute.tsx
+                  ++  return isAuthorized ? <>{children}</> : <Navigate to="/Login-register" />;
+work here      
+code :-
+          import React from "react";
+          import { useNavigate } from "react-router-dom";
+          // import { useGoogleLogin, GoogleLoginResponse, GoogleLoginResponseOffline } from '@react-oauth/google';
+          import { FcGoogle } from 'react-icons/fc';
+          import { MdEmail } from "react-icons/md";
+
+          import Background from "../components/Background";
+
+          const LandingLoginRegister: React.FC = () => {
+            const navigate = useNavigate();
+
+            // This function will handle the Google login response
+            // const responseGoogle = (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
+            //   if ('accessToken' in response) {
+            //     // Assuming your API needs a token, you'd include your API call logic here.
+            //   }
+            // };
+
+            // Configuration for useGoogleLogin hook
+            // const Googlelogin = useGoogleLogin({
+            //   onSuccess: (response) => responseGoogle(response as GoogleLoginResponse),
+            //   onError: (response) => console.error(response),
+            // });
+
+            return (
+              <Background>
+                <div className="absolute flex flex-col justify-center items-center top-0 right-0 left-0 bottom-0 bg-blackOverlay">
+                  <div className="p-5">
+                    <p></p>
+                  </div>
+
+                  <div className="shadow-2xl">
+                    <button
+                      type="button"
+                      className="mb-7 w-full  bg-primary flex justify-center items-center p-3 rounded-lg cursor-pointer outline-none focus:outline-none hover:bg-blue-500 focus:bg-blue-500 text-black font-bold py-2 px-4 rounded"
+                      onClick={() =>navigate('/login')}
+                    ><MdEmail className="mr-4" /> Log in 
+                    </button>
+                    <button
+                      type="button"
+                      className=" w-full mb-7 bg-primary flex justify-center items-center p-3 rounded-lg cursor-pointer outline-none focus:outline-none hover:bg-blue-500 focus:bg-blue-500 text-black font-bold py-2 px-4 rounded"
+                      onClick={() => navigate('/register')}
+                    > 👤  Register
+                    </button>
+                    <button
+                      type="button"
+                      className="bg-white flex justify-center items-center p-3 rounded-lg cursor-pointer outline-none focus:outline-none hover:bg-blue-500 focus:bg-blue-500 text-black font-bold py-2 px-4 rounded"
+                      // onClick={() => Googlelogin()}
+                    >
+                      <FcGoogle className="mr-4 " /> Sign in with google
+                    </button>
+                  </div>
+                </div>
+              </Background>
+            );
+          };
+
+          export default LandingLoginRegister;
+
+-----------------------------------------------------------------------------------
+Now connecting the Login or register Form So
+---------------------------------------------------------------------------
+->  setup Register.tsx
+    code:-
+          import React from 'react'
+          import Form from '../components/Form'
+          import Background from '../components/Background'
+          type Props = {}
+
+          const Register = (props: Props) => {
+            return (
+            
+             <Background>
+                  <Form route="/ChatAnalyzerApi/user/register/" method="register" />
+              </Background>
+
+            )
+          }         
+          export default Register
+
+->  setup Login.tsx
+      code:-
+            import Form from '../components/Form'
+            import Background from '../components/Background'
+            type Props = {}
+
+            const Login = (props: Props) => {
+              return (
+                <Background>
+                <Form route="/ChatAnalyzerApi/token/" method="login"></Form>
+                </Background>
+              )
+            }
+
+            export default Login
+
+->update .env
+      VITE_API_URL="http://127.0.0.1:8000/"
+
+
+---------------------------------------------------------
+7th commit
+-----------------------------------------------------------
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Now work in Home component

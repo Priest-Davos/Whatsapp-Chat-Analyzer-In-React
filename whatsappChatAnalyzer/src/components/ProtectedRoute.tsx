@@ -63,7 +63,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     }
 
     // Render children if user is authorized, otherwise redirect to login
-    return isAuthorized ? <>{children}</> : <Navigate to="/login" />;
+    return isAuthorized ? <>{children}</> : <Navigate to="/Login-register" />;
 }
 
 export default ProtectedRoute;

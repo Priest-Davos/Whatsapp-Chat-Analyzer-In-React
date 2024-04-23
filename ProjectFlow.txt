@@ -718,3 +718,13 @@ Now connecting the Login or register Form So
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Now work in Home component
+
+graphql, ant design, refine,Chakra UI, charjs
+install some packages
+      npm install antd
+      npm install @chakra-ui/react @emotion/react @emotion/styled framer-motion
+      npm install chart.js
+
+      
+
+

@@ -725,6 +725,358 @@ install some packages
       npm install @chakra-ui/react @emotion/react @emotion/styled framer-motion
       npm install chart.js
 
+----------------------------------------- ---------------------   
+8th commit done
+-------------------------------------------------------
+create some components
+     in pages-> About.tsx    ,  ChatDetails.tsx   , ChatUpload.tsx    ,  Graphs.tsx ,   HelpAndSupport.tsx  , OverallResult.tsx
+               UserProfile.tsx 
+        
+     in components :-NavBar.tsx ,   Sidebar.tsx ,   Footer.tsx  ,   Chat.tsx ,  ChatList.tsx , LogoutButton.tsx ,  Upload.tsx                   
+                     Settings.tsx          
+    
+    basic  code using tsrafce command
+
+
+_________________________________________________________________________
+Update Home.tsx
+This is the main page
+
+code:-
+        import { Outlet } from 'react-router-dom';
+        import React from 'react';
+        import Navbar from '../components/Navbar';
+        import Sidebar from '../components/Sidebar';
+        
+        const Home: React.FC = () => {
+        
+          return (
+            <>
+              <Navbar />
+        
+              <Sidebar>
+              <Outlet/>
+              </Sidebar>
+            </>
+          );
+        };
+        
+        export default Home;
+
       
+_____________________________________
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++      
+work in individual created components and pages for Home or index   ( used ant Design for readymade components)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+work in Sidebar.tsx
+used Ant Design Library
+
+code :- 
+          import React from 'react';
+          import {PoweroffOutlined ,CustomerServiceOutlined ,SnippetsFilled ,WechatOutlined ,HomeOutlined , UploadOutlined, UserOutlined, VideoCameraOutlined ,AreaChartOutlined } from '@ant-design/icons';
+          import {  Layout, Menu } from 'antd';
+          import { Link } from 'react-router-dom';
+          import { theme } from 'antd';
+          import Footer from './Footer';
+
+          const { Sider, Content } = Layout;
+
+          interface SidebarProps {
+            children: React.ReactNode;
+          }
+
+          const Sidebar: React.FC<SidebarProps> = ({ children }) => {
+            const {
+              token: { colorBgContainer, borderRadiusLG },
+            } = theme.useToken();
+
+            return (
+              <Layout>
+                <Sider
+                  breakpoint="lg"
+                  collapsedWidth="0"
+                  onBreakpoint={(broken) => {
+                    console.log(broken);
+                  }}
+                  onCollapse={(collapsed, type) => {
+
+                    console.log(collapsed, type);
+                  }}
+                  style={{ height: '100vh', }}
+                >
+                  <div className="demo-logo-vertical" />
+                  <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
+                    <Menu.Item key="1" icon={<HomeOutlined />} >
+                      <Link to="/">Home</Link>
+                    </Menu.Item>
+
+                    <Menu.Item key="2" icon={<VideoCameraOutlined />}>
+                      <Link to="about">About</Link>
+                    </Menu.Item>
+                    <Menu.Item key="3" icon={<UploadOutlined />}>
+                      <Link to="upload-chat">Upload Chat</Link>
+                    </Menu.Item>
+                    <Menu.Item key="4" icon={<WechatOutlined />}>
+                    <Link to="chat-details">Chat Details</Link>
+                    </Menu.Item>
+                    <Menu.Item key="5" icon={<AreaChartOutlined />}>
+                    <Link to="graphs-patterns">Graphs</Link>
+                    </Menu.Item>
+                    <Menu.Item key="6" icon={<SnippetsFilled  />}>
+                    <Link to="overall-result"> Overall Result</Link>
+                    </Menu.Item>
+                    <Menu.Item key="7" icon={<CustomerServiceOutlined />}>
+                    <Link to="help&support">Help & Support</Link>
+                    </Menu.Item>
+                    <Menu.Item key="8" icon={<PoweroffOutlined /> }>
+                    <Link to="/logout">Logout</Link>
+                    </Menu.Item>
+
+                  </Menu>
+                </Sider>
+                <Layout>
+                  <Content style={{ margin: '24px 16px 0 ' }}>
+                    <div
+                      style={{
+                        padding: 24,
+                        minHeight: 360,
+                        background: colorBgContainer,
+                        borderRadius: borderRadiusLG,
+                        marginLeft:33,
+                      }}
+                    >
+                      {children}
+                    </div>
+                  </Content>
+                  <Footer/>
+                </Layout>
+              </Layout>
+            );
+          };
+
+          export default Sidebar;
+
+
+work in Navbar.tsx
+          code :-
+            import React from 'react';
+            import { Layout, Menu } from 'antd';
+            import {PoweroffOutlined, HomeOutlined, UploadOutlined, UserOutlined } from '@ant-design/icons';
+            import { Link } from 'react-router-dom';
+            import LogoutButton from './LogoutButton';
+
+            const { Header } = Layout;
+            
+            const Navbar: React.FC = () => {
+              return (
+                <Header
+                  style={{
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 1,
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <div className="demo-logo" />
+                  <Menu
+                    theme="dark"
+                    mode="horizontal"
+                    defaultSelectedKeys={['1']}
+                    style={{ flex: 1, minWidth: 0 }}
+                  >
+                    <Menu.Item key="1" icon={<HomeOutlined />}>
+                      <Link to="/">Home</Link>
+                    </Menu.Item>
+                    <Menu.Item key="2" icon={<UploadOutlined />}>
+                      <Link to="upload-chat">Upload</Link>
+                    </Menu.Item>
+                    <Menu.Item key="3" icon={<UserOutlined />}>
+                      <Link to="user-profile">Profile</Link>
+                    </Menu.Item>
+                    <Menu.Item key="4" icon={<PoweroffOutlined />}>
+                       <LogoutButton/>
+                        {/* or */}
+                        {/* <Link to="/Login-register">Logout</Link> */}
+                    </Menu.Item>
+                  </Menu>
+                </Header>
+              );
+            };
+            
+            export default Navbar;
+            
+work in Footer.tsx
+      code:
+          import React from 'react';
+          import { Layout } from 'antd';
+
+          const { Footer: AntFooter } = Layout;
+
+          const Footer: React.FC = () => {
+            return (
+              <AntFooter style={{ textAlign: 'center' }}>
+               CopyRight ©{new Date().getFullYear()} 
+               <div className='mt-5'>  Made with ❤️ by{' Priest Davos'}</div>
+
+              </AntFooter>
+            );
+          };
+
+          export default Footer;
+
+Work in LogoutButton.tsx
+      code:-
+          import React from 'react';
+          import { useNavigate } from 'react-router-dom';
+          // import '../styles/LogoutButton.css';
+
+          const LogoutButton: React.FC = () => {
+              const navigate = useNavigate();
+              const handleLogout = () => { 
+                  localStorage.clear();      
+                  navigate('/Login-register');
+              };
+              return (
+                  <button onClick={handleLogout} className="logout-button">     Logout  </button>
+              );
+          };
+          export default LogoutButton;
+
+     create a LogoutButton css fileif want to give custom style
+
+Basic work in Upload.tsx (component)  // src/components/Upload.tsx
+        code:-
+            import React from 'react';
+            import { Upload, Button, message } from 'antd';
+            import { UploadOutlined } from '@ant-design/icons';
+
+            const UploadComponent: React.FC = () => {
+              const props = {
+                name: 'file',
+                action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76', // Replace with your upload URL
+                headers: {
+                  authorization: 'authorization-text',
+                },
+                onChange(info: any) {
+                  if (info.file.status !== 'uploading') {
+                    console.log(info.file, info.fileList);
+                  }
+                  if (info.file.status === 'done') {
+                    message.success(`${info.file.name} file uploaded successfully`);
+                  } else if (info.file.status === 'error') {
+                    message.error(`${info.file.name} file upload failed.`);
+                  }
+                },
+              };
+
+              return (
+                <Upload {...props}>
+                  <Button icon={<UploadOutlined />}>Upload File</Button>
+                </Upload>
+              );
+            };
+
+            export default UploadComponent;
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+ work later in  Chat.tsx , Settings.tsx ,  ChatList.tsx  ,Graphs.tsx  ,  Chat Details .tsx , ChatUpload.tsx,
+   About.tsx , HelpAndSupport.tsx  , UserProfile.tsx , OverallResult.tsx , 
+                
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Now configure routing in App.tsx for these newly created pages/components
+App.tsx ++
+    code b/w ++++.. line is updated code
+  
+    updated code:-
+
+          // Import necessary React and React Router components
+          import React from "react";
+          import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+          import "./App.css"
+          //import components
+          // import LandingLoginRegister from "./pages/LandingLoginRegister";
+          import Login from "./pages/Login";
+          import Register from "./pages/Register";
+          import Home from "./pages/Home";
+          import NotFound from "./pages/NotFound";
+          import ProtectedRoute from "./components/ProtectedRoute";
+          import LandingLoginRegister from "./pages/LandingLoginRegister";
+        ++++++++++++++++++++++++++++++++++++++++++++
+          // sub pages for Home 
+          import About from "./pages/About";
+          import Upload from "./pages/ChatUpload";
+          import UserProfile from "./pages/UserProfile";
+          import ChatDetails from "./pages/ChatDetails";
+          import Graphs from "./pages/Graphs";
+          import OverallResult from "./pages/OverallResult";
+          import HelpAndSupport from "./pages/HelpAndSupport";
+        +++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+          // Logout component clears all stored tokens and navigates to login page
+          const Logout: React.FC = () => {
+            localStorage.clear(); // Clear all local storage items
+            return <Navigate to="/Login-register" />; // Redirect to login page
+          };
+
+          // RegisterAndLogout component clears storage and renders the Register component
+          const RegisterAndLogout: React.FC = () => {
+            localStorage.clear(); // Clear all local storage items
+            return <Register />; // Render Register page
+          };
+
+          // Main App component that defines the routing for the application
+          const App: React.FC = () => {
+            return (
+              <BrowserRouter>
+                <Routes>
+           +++++++++++++++++++++++++++++++++++
+                <Route path="/" element={<Navigate to="/home" />} />
+                  <Route
+                    path="home" // Main route that is protected
+                    element={
+                      <ProtectedRoute> {/* Only allow access if user is authenticated*/}
+                        <Home /> 
+                      </ProtectedRoute>
+                    }  
+                  >
+                    {/*Nested route for Home component */}
+                    <Route index element={<div>Home Main Content</div>} />
+                    <Route path="about" element={<About />} />
+                    <Route path="upload-chat" element={<Upload />} />
+                    <Route path="chat-details" element={<ChatDetails/>} />
+                    <Route path="graphs-patterns" element={<Graphs/>} />
+                    <Route path="overall-result" element={<OverallResult/>} />
+                    <Route path="help&support" element={<HelpAndSupport/>} />
+
+
+                    <Route path="user-profile" element={<UserProfile/>} />
+
+                    </Route>
+              +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                  <Route path ="/Login-register" element={<LandingLoginRegister/>} />
+                  <Route path="/login" element={<Login />} /> {/* Route for the login page */}
+                  <Route path="/logout" element={<Logout />} /> {/* Route for logging out */}
+                  <Route path="/register" element={<RegisterAndLogout />} /> {/* Route for registration and logout */}
+                  <Route path="*" element={<NotFound />}></Route> {/* Route for handling undefined paths */}
+
+                </Routes>
+              </BrowserRouter>
+            );
+          };
+
+          export default App;
+
+very basic Homepge setup done with navigation will update some design etc later
+-------------------------------------------------------------------
+9th commit done
+-------------------------------------------------------------------
+
 
 

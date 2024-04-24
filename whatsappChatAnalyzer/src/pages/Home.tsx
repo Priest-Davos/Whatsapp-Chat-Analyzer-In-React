@@ -1,11 +1,20 @@
-import React from 'react'
+// Home.tsx
+import { Outlet } from 'react-router-dom';
+import React from 'react';
+import Navbar from '../components/Navbar';
+import Sidebar from '../components/Sidebar';
 
-type Props = {}
-
-const Home = (props: Props) => {
+const Home: React.FC = () => {
+ 
   return (
-    <div>Home</div>
-  )
-}
+    <>
+      <Navbar />
 
-export default Home
+      <Sidebar>
+      <Outlet/>
+      </Sidebar>
+    </>
+  );
+};
+
+export default Home;

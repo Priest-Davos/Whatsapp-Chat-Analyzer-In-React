@@ -8,13 +8,13 @@ const UploadComponent: React.FC = () => {
   const handleUpload = async (file: File) => {
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('files', file);
       // console.log(file)
 
       // Make a POST request to the server to upload the file
       const response = await api.post('/ChatAnalyzerApi/upload/', formData, {
         headers: {
-          'Content-Type': 'form-data', // Set content type to multipart/form-data
+          'Content-Type': 'multipart/form-data', // Set content type to multipart/form-data
         },
       });
 

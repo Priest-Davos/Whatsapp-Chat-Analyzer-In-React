@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User  # Import the User model from Django's authentication system
 from rest_framework import serializers  # Import serializers from Django REST Framework
 
+from .models import UploadedFile
+
 class UserSerializer(serializers.ModelSerializer):  # Define a serializer for the User model
     class Meta:  # Meta class to specify metadata options
         model = User  # Specify the User model for the serializer
@@ -11,3 +13,9 @@ class UserSerializer(serializers.ModelSerializer):  # Define a serializer for th
         # Create a new user instance using the validated data
         user = User.objects.create_user(**validated_data)
         return user  # Return the newly created user instance
+    
+class UploadedFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UploadedFile
+        fields = ['name', 'file', 'uploaded_at','owner']
+        read_only_fields = ('name', 'uploaded_at','owner')

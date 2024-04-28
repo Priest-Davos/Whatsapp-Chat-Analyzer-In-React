@@ -1132,13 +1132,13 @@ step 1 -> Frontend setup for file upload
             const handleUpload = async (file: File) => {
               try {
                 const formData = new FormData();
-                formData.append('file', file);
+                formData.append('files', file);
                 // console.log(file)
 
                 // Make a POST request to the server to upload the file
                 const response = await api.post('/ChatAnalyzerApi/upload/', formData, {
                   headers: {
-                    'Content-Type': 'form-data', // Set content type to multipart/form-data
+                    'Content-Type': 'multipart/form-data', // Set content type to multipart/form-data
                   },
                 });
 
@@ -1172,3 +1172,137 @@ step 1 -> Frontend setup for file upload
 ---------------------------------
 commit 11
 --------------------------------
+Updated 2 line in upload component 
+---formData.append('files', file);
+---'Content-Type': 'multipart/form-data',
+-------------------------------------
+commit 12
+----------------------------------------
+performing
+step 2, 3,4 
+Note:- Below (3,4) creating a model and serializer for file  is optional
+      as i also created a manual method for file upload locally in views.py
+      you can remove the serializer code from views.py if want to manual save
+
+1. configure Django settings
+     code :-
+        # for saving uploaded file
+        import os
+        
+        BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        
+        MEDIA_ROOT = os.path.join(BASE_DIR, 'uploadedFiles')
+        MEDIA_URL = '/media/'     
+2. configure urls.py
+ create urls.py in ChatAnalyzerApi folder
+    code :-
+        from django.urls import path
+        from . import views  # Import views module from the current directory
+
+        urlpatterns = [
+            path('upload/', views.FileUploadView.as_view(), name='file-upload'),
+        ]
+
+  connect this to backend / urls.py
+  update backend /urls.py by adding path
+    code:-       
+        path("ChatAnalyzerApi/",include("ChatAnalyzerApi.urls")) #By including "api.urls", you're telling Django to include all URL patterns defined in the urls.py file of your api app. 
+
+3. Define Django Models:(optional)
+Let’s create a Model where we store the file path (as file) and file upload time (as uploaded_on). So the uploaded file will be stored in media folder and file field will contain it’s path.
+  update models.py
+    code :-
+        from django.db import models
+        from django.contrib.auth.models import User
+
+        # Create your models here.
+        class UploadedFile(models.Model):
+             name = models.CharField(max_length=255)
+             file = models.FileField()
+             uploaded_at = models.DateTimeField(auto_now_add=True)
+             owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="files")
+             def __str__(self):
+                return self.name
+Now Run the migration
+  In terminal:-
+        python manage.py makemigrations
+        python manage.py migrate
+
+
+4. Define Django Serializers: (optional)
+i wont as dont think i need
+update serializers.py ++
+  code:-
+      from .models import UploadedFile
+
+      class UploadedFileSerializer(serializers.ModelSerializer):
+          class Meta:
+              model = UploadedFile
+              fields = ['name', 'file', 'uploaded_at','owner']
+              read_only_fields = ('name', 'uploaded_at','owner')
+
+
+
+5. Ensure Backend Endpoint for File Uploads:
+  update views.py  ++
+    code ++:-
+        from django.http import JsonResponse
+        from rest_framework.views import APIView
+        from rest_framework.response import Response
+        
+        import os #for manually upload_file_locally
+        from django.conf import settings #for manually upload_file_locally
+        from .models import UploadedFile
+        
+        from rest_framework.parsers import FormParser, MultiPartParser
+        
+        
+        class FileUploadView(APIView):
+             # This method determines which note instances are returned on a GET request
+            def get_queryset(self):
+                user = self.request.user# Access the user from the request object (the user making the request)
+                return UploadedFile.objects.filter(owner=user)# Filter and return only the files where the authenticated user is the owner
+            
+            parser_classes = (MultiPartParser, FormParser)
+        
+            def post(self, request, *args, **kwargs):
+                files_responses = []
+                uploaded_files = request.FILES.getlist('files')
+                if not uploaded_files:
+                    return Response({'error': 'No files uploaded.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+                for file in uploaded_files:
+                    
+                    file_instance = UploadedFile(file=file)
+                    file_instance.name = file.name  # Optionally set other fields like owner, if applicable
+                    serializer = UploadedFileSerializer(file_instance, data={'file': file}, context={'request': request})
+                    if serializer.is_valid():
+                        serializer.save(owner=self.request.user)  # Save the model and file will be automatically handled
+                        files_responses.append(serializer.data)
+                        
+                        # To manually upload file locally (optional)
+                        # upload_file_locally(file)# dont need as  Django's FileField model field automatically handles saving
+                        
+                        # Additional file handling can be done here
+                       
+                        
+                    else:
+                        print("serializer not valid")
+                        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                
+                return Response({'message': 'Files uploaded successfully', 'files': files_responses}, status=status.HTTP_201_CREATED)
+            
+        # Handle the logic to save or process the uploaded file
+        # For example, save the file to a folder
+        def upload_file_locally(file):
+            upload_dir = os.path.join(settings.MEDIA_ROOT,file.name)
+            if not os.path.exists(os.path.dirname(upload_dir)):
+                    os.makedirs(os.path.dirname(upload_dir))
+            with open(upload_dir, 'wb+') as destination:
+                for chunk in file.chunks():
+                    destination.write(chunk)
+---------------------------------------------------
+commit 13
+-----------------------------------------------------     
+
+

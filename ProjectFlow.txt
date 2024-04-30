@@ -1304,5 +1304,24 @@ update serializers.py ++
 ---------------------------------------------------
 commit 13
 -----------------------------------------------------     
+Now handle file preprocessing
+-When it comes to organizing the logic for preprocessing in your API, there are a few approaches you can take:
 
+-Function in Views: You can define a function within your views.py file to handle the preprocessing logic. This function can be called from your views that handle file uploads.
+-Separate Module: If the preprocessing logic is complex or reusable across multiple views, you might consider creating a separate Python module (e.g., preprocess.py) where you define functions or classes to handle preprocessing. Then you can import and use these functions or classes in your views.
+-Class-based Views: If your preprocessing logic involves multiple steps or requires maintaining state between requests, you might consider using class-based views instead of function-based views. You can define methods within the class to handle different steps of preprocessing.
+-Middleware: Depending on the nature of preprocessing, you could also consider using Django middleware. Middleware sits between the request and response pipeline and can intercept requests to perform preprocessing tasks.
+-Utils Module: Another common approach is to create a utils.py module where you define utility functions that can be reused across your application. You can place preprocessing functions in this module if they are generic and can be used in different contexts.
 
+--------------------------------
+Now work on it
+Create a folder named utils in ChatAnalyzerApi directory 
+Here will create modules for preprocessing
+
+Instead of directly preprocessing  the chat  file which i get from server 
+I will check the folder which will be dynamically created when user upload the file 
+and fetch file from that folder
+
+-------------------------------
+commit 14
+----------------------------

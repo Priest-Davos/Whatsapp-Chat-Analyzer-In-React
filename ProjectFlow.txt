@@ -1436,3 +1436,49 @@ we get a method <get_df(folderpath)> and returns a dataframe
 commit 15
 -----------------------------------------------
 Now will update views.py to use this dataframe
+Like first create a view for sending the dataframe as json object and create iths url path TokenObtainPairView
+
+view.py
+code ++:-
+
+      from ChatAnalyzerApi.utils.get_dataframe import get_df
+      import shutil
+      class DataFrameAPIView(APIView):
+          def get(self, request):
+              try:
+                  df= fetch_data_from_local_path(folder_path="uploadedFiles")
+                  # print(type(df))
+                  # Convert DataFrame to JSON
+                  json_data = df.to_json(orient='records', date_format='iso')
+                  # print(json_data)
+
+                  # Return JSON response with success status code
+                  return Response(json_data, status=status.HTTP_200_OK)
+              except Exception as e:
+                  # Return error response with appropriate status code and error message
+                  return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+      # currently will manually deleting the folder 
+      def delete_old_folder(folder_path="uploadedFiles"):
+          try:
+              shutil.rmtree(folder_path)  # Remove the folder and all its contents
+              # print(f"Deleted old folder at {folder_path}")
+          except FileNotFoundError:
+              print(f"Folder does not exist at {folder_path}, nothing to delete")
+          except Exception as e:
+              print(f"Error deleting folder: {e}")
+
+      #this meth will fetch the df from the folder
+      def fetch_data_from_local_path(folder_path):
+          if os.path.exists(folder_path):
+              # print(get_df(folder_path))
+              return(get_df(folder_path))
+          else:
+              return ("folder dont exist")
+
+      in FileUploadView
+          call delete_old_folder() in post ....
+          - if  diectory exist then delete manually
+  ------------------------------------
+  commit 16
+  ------------------------------------    
